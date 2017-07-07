@@ -6,7 +6,16 @@ import logger from 'morgan';
 // import favicon from 'serve-favicon';
 import path from 'path';
 import lessMiddleware from 'less-middleware';
-import index from './routes/index';
+import bookRoutes from './routes/bookRoutes';
+import mongoose from 'mongoose';
+
+mongoose.Promise = global.Promise;
+mongoose.connect('mongodb://localhost/bookdb');
+mongoose.connection.on('error', (err) => {
+  console.error(err);
+  console.log('%s MongoDB connection error. Please make sure MongoDB is running.', chalk.red('✗'));
+  process.exit();
+});
 
 const app = express();
 const debug = Debug('wdi-project-3-backend:app');
@@ -27,7 +36,7 @@ app.use(cookieParser());
 app.use(lessMiddleware(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', index);
+app.use('/api/', bookRoutes);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
