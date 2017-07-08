@@ -3,11 +3,16 @@ import cookieParser from 'cookie-parser';
 import Debug from 'debug';
 import express from 'express';
 import logger from 'morgan';
+import mongoose from 'mongoose';
+import passport from 'passport';
+
 // import favicon from 'serve-favicon';
 import path from 'path';
 import lessMiddleware from 'less-middleware';
+
+/* import routes to make them available to app */
 import bookRoutes from './routes/bookRoutes';
-import mongoose from 'mongoose';
+import auth from './routes/auth';
 
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost/bookdb');
@@ -19,6 +24,11 @@ mongoose.connection.on('error', (err) => {
 
 const app = express();
 const debug = Debug('wdi-project-3-backend:app');
+
+/**
+ * API keys and Passport configuration.
+ */
+const passportConfig = require('./config/passport');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
