@@ -18,7 +18,6 @@ const userSchema = new Mongoose.Schema({
  * Password hash middleware.
  */
 userSchema.pre('save', function(next) {
-  console.log("salting and hashing..");
   const user = this;
   console.log(user);
   /* Skip salting and hashing if not user signup */

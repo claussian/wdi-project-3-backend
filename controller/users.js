@@ -18,17 +18,4 @@ exports.removeUserSharedBooks = (req, res, next) => {
   });
 }
 
-// exports.removeUserBorrowedBooks = (req, res, next) => {
-//   const user = req.user;
-//
-//   User.findById(user._id, (err, foundUser) => {
-//     foundUser.booksBorrowed = [];
-//     foundUser.save( (err, savedUser) => {
-//       if (err) return res.status(400).send('Bad Request');
-//       console.log("emptied User booksBorrowed");
-//       res.json(savedUser);
-//     });
-//   });
-// }
-
 export default exports;
