@@ -105,7 +105,7 @@ exports.createBook = (req, res, next) => {
         foundUser.booksOwned.push(book._id);
         foundUser.save( (err, savedUser) => {
           if (err) return res.status(400).send('Bad Request');
-          console.log("pushed book._id into User");
+          console.log("pushed book._id into User booksOwned");
           console.log(savedUser);
         });
 
@@ -115,7 +115,7 @@ exports.createBook = (req, res, next) => {
 }
 
 /*
-*  Update book, release book based on Boolean
+*  Update book, release book based on Boolean condition. Find user who borrowed and release his book status too
 */
 exports.updateBook = (req, res, next) => {
 
@@ -131,7 +131,7 @@ exports.updateBook = (req, res, next) => {
       return res.status(404).send('Not Found');
     }
     console.log("Found book, now updating")
-    console.log(foundBook);
+
 
     // foundBook.cover = book.cover;
     foundBook.title = book.title;
@@ -139,6 +139,33 @@ exports.updateBook = (req, res, next) => {
     foundBook.genre = book.genre;
     foundBook.review = book.review;
 
+    if(book.release == 'true') {
+
+      /* Find borrower and release book from his borrowed list */
+      const borrowerId = foundBook.reservedBy
+
+      User.findById(borrowerId, (err, foundBorrower) => {
+        if (err) return res.status(400).send('Bad Request');
+
+        if(!foundBorrower){
+          return res.status(404).send('User not Found');
+        }
+        console.log("found borrower");
+
+        const booksBorrowed = foundBorrower.booksBorrowed;
+        booksBorrowed.splice(booksBorrowed.indexOf(borrowerId),1);
+
+        foundBorrower.save( (err, savedBorrower) => {
+          if (err) return res.status(400).send('Bad Request');
+          console.log("removed book._id from User booksBorrowed");
+          console.log(savedBorrower);
+        });
+      });
+      
+      foundBook.reservedBy = null;
+      foundBook.reserved = false;
+    }
+    console.log(foundBook);
     foundBook.save((err, updatedBook)=> {
       if (err) return res.status(400).send('Bad Request');
       console.log("updated book");
@@ -179,7 +206,11 @@ exports.reserveBook = (req, res, next) => {
         }
 
         foundUser.booksBorrowed.push(book._id);
-        foundUser.save();
+        foundUser.save( (err, savedUser) => {
+          if (err) return res.status(400).send('Bad Request');
+          console.log("pushed book._id into User booksBorrowed");
+          console.log(savedUser);
+        });
 
       });
          res.json(book);
