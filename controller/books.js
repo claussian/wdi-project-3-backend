@@ -8,10 +8,13 @@ exports.listBooks = (req, res, next) => {
 
   console.log("got request listBooks");
 
-  Book.find({}, (err, books) => {
-  if (err) return res.status(404).send('Not found');
-  res.json(books);
-  });
+  Book.find()
+    .populate('owner')
+    .populate('reservedBy')
+    .exec((err, books) => {
+      if (err) return res.status(404).send('Not found');
+      res.json(books);
+    });
 }
 
 /*
@@ -26,9 +29,9 @@ exports.getBook = (req, res, next) => {
     .populate('owner')
     .populate('reservedBy')
     .exec((err, book) => {
-    if (err) return res.status(404).send('Not found');
-    res.json(book);
-  });
+      if (err) return res.status(404).send('Not found');
+      res.json(book);
+    });
 }
 
 /*
