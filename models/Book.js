@@ -1,4 +1,5 @@
 import Mongoose from 'mongoose';
+import User from './User';
 
 const Schema = Mongoose.Schema;
 
@@ -8,10 +9,10 @@ const bookSchema = new Mongoose.Schema({
   title: String,
   author: String,
   genre: String,
-  owner: {type: Schema.ObjectId},
+  owner: {type: Schema.ObjectId, ref: 'User'},
   review: String,
   reserved: Boolean,
-  reservedBy: {type: Schema.ObjectId}
+  reservedBy: {type: Schema.ObjectId, ref: 'User'}
 }, { timestamps: true });
 
 const Book = Mongoose.model('Book', bookSchema);

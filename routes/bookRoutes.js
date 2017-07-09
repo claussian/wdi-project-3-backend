@@ -4,10 +4,10 @@ import booksController from '../controller/books';
 const router = express.Router();
 
 /* GET all books */
-router.get('/', booksController.listBooks);
+router.get('/book', booksController.listBooks);
 
 /* GET individual book */
-router.get('/:id', booksController.getBook);
+router.get('/book/:id', booksController.getBook);
 
 /* GET books shared by user */
 router.get('/shared', booksController.listBooksSharedByUser);
@@ -16,10 +16,10 @@ router.get('/shared', booksController.listBooksSharedByUser);
 router.get('/borrowed', booksController.listBooksBorrowedByUser);
 
 /* POST a book to share */
-router.post('/', booksController.createBook);
+router.post('/book', booksController.createBook);
 
 /* PUT your shared book */
-router.put('/:id', booksController.updateBook);
+router.put('/book/:id', booksController.updateBook);
 
 /* PUT to reserve a book */
 router.put('/reserve/:id', booksController.reserveBook);

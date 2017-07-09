@@ -8,10 +8,13 @@ exports.listBooks = (req, res, next) => {
 
   console.log("got request listBooks");
 
-  Book.find({}, (err, books) => {
-  if (err) return res.status(404).send('Not found');
-  res.json(books);
-  });
+  Book.find()
+    .populate('owner')
+    .populate('reservedBy')
+    .exec((err, books) => {
+      if (err) return res.status(404).send('Not found');
+      res.json(books);
+    });
 }
 
 /*
@@ -22,10 +25,13 @@ exports.getBook = (req, res, next) => {
   console.log("got request getBook");
 
   const id = req.params.id;
-  Book.findById(id, (err, book) => {
-    if (err) return res.status(404).send('Not found');
-    res.json(book);
-  });
+  Book.findById(id)
+    .populate('owner')
+    .populate('reservedBy')
+    .exec((err, book) => {
+      if (err) return res.status(404).send('Not found');
+      res.json(book);
+    });
 }
 
 /*
@@ -66,7 +72,7 @@ exports.listBooksBorrowedByUser = (req, res, next) => {
       if(!foundUser){
         return res.status(404).send('User not Found');
       }
-      res.json(foundUser.booksOwned);
+      res.json(foundUser.booksBorrowed);
     });
 }
 
@@ -85,6 +91,7 @@ exports.createBook = (req, res, next) => {
     book.owner = req.user._id || "Unknown";
     book.review = req.body.review || "Unknown";
     book.reserved = false;
+    book.reservedBy = null;
     book.save((err, book) => {
 
       /* Update user model with saved book */
@@ -102,7 +109,7 @@ exports.createBook = (req, res, next) => {
         foundUser.booksOwned.push(book._id);
         foundUser.save( (err, savedUser) => {
           if (err) return res.status(400).send('Bad Request');
-          console.log("pushed book._id into User");
+          console.log("pushed book._id into User booksOwned");
           console.log(savedUser);
         });
 
@@ -112,7 +119,7 @@ exports.createBook = (req, res, next) => {
 }
 
 /*
-*  Update book, release book based on Boolean
+*  Owner updates book, releases book based on Boolean condition. Find user who borrowed and release his book status too
 */
 exports.updateBook = (req, res, next) => {
 
@@ -128,7 +135,7 @@ exports.updateBook = (req, res, next) => {
       return res.status(404).send('Not Found');
     }
     console.log("Found book, now updating")
-    console.log(foundBook);
+
 
     // foundBook.cover = book.cover;
     foundBook.title = book.title;
@@ -136,6 +143,33 @@ exports.updateBook = (req, res, next) => {
     foundBook.genre = book.genre;
     foundBook.review = book.review;
 
+    if(book.release == 'true') {
+
+      /* Find borrower and release book from his borrowed list */
+      const borrowerId = foundBook.reservedBy
+
+      User.findById(borrowerId, (err, foundBorrower) => {
+        if (err) return res.status(400).send('Bad Request');
+
+        if(!foundBorrower){
+          return res.status(404).send('User not Found');
+        }
+        console.log("found borrower");
+
+        const booksBorrowed = foundBorrower.booksBorrowed;
+        booksBorrowed.splice(booksBorrowed.indexOf(borrowerId),1);
+
+        foundBorrower.save( (err, savedBorrower) => {
+          if (err) return res.status(400).send('Bad Request');
+          console.log("removed book._id from User booksBorrowed");
+          console.log(savedBorrower);
+        });
+      });
+
+      foundBook.reservedBy = null;
+      foundBook.reserved = false;
+    }
+    console.log(foundBook);
     foundBook.save((err, updatedBook)=> {
       if (err) return res.status(400).send('Bad Request');
       console.log("updated book");
@@ -146,7 +180,7 @@ exports.updateBook = (req, res, next) => {
 
 
 /*
-* Reserve book
+* Borrower reserves book
 */
 exports.reserveBook = (req, res, next) => {
 
@@ -176,7 +210,11 @@ exports.reserveBook = (req, res, next) => {
         }
 
         foundUser.booksBorrowed.push(book._id);
-        foundUser.save();
+        foundUser.save( (err, savedUser) => {
+          if (err) return res.status(400).send('Bad Request');
+          console.log("pushed book._id into User booksBorrowed");
+          console.log(savedUser);
+        });
 
       });
          res.json(book);

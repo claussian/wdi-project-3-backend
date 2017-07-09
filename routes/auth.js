@@ -1,10 +1,11 @@
 import express from 'express';
 import passport from 'passport';
 import User from '../models/User';
+import userController from '../controller/users';
 
 const router = express.Router();
 
-/* dispatch an ajax call */
+/* Verify user credentials */
 router.get('/user', (req, res, next) => {
   res.json(req.user);
 });
@@ -67,9 +68,13 @@ router.post('/login', function(req, res, next) {
     })(req, res, next);
 });
 
+/* logout user */
 router.get('/logout',(req, res, next) => {
   req.logout();
   res.json({'message': 'User logged out'});
 });
+
+/*  clear shared books */
+router.delete('/user/clearBooks', userController.removeUserSharedBooks);
 
 export default router;
