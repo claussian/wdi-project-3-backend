@@ -1,3 +1,4 @@
+import session from 'express-session';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import Debug from 'debug';
@@ -46,6 +47,18 @@ app.use(cookieParser());
 app.use(lessMiddleware(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
+/* Why do we need this ? To connect mongodb by session? */
+const MongoStore = require('connect-mongo')(session);
+app.use(session({
+  resave: true,
+  saveUninitialized: true,
+  secret: "WDI Singapore",
+  store: new MongoStore({
+    url: 'mongodb://localhost/cardb',
+    autoReconnect: true,
+    clear_interval: 3600
+  })
+}));
 /* Make passport available to app. Passport will update user session with user info on authentication */
 app.use(passport.initialize());
 app.use(passport.session());

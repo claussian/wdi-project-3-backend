@@ -1,6 +1,6 @@
 import express from 'express';
 import passport from 'passport';
-import User from '../model/User';
+import User from '../models/User';
 
 const router = express.Router();
 
@@ -14,7 +14,7 @@ router.post('/signup', function(req, res, next) {
     User.findOne( {$or:[{ email: req.body.email },
                         { username:req.body.username}]}, (err, existingUser) => {
 
-      console.log("Data: ",req.body.email, req.body.username, req.body.password)
+      console.log("Data: ",req.body.email, req.body.username, req.body.password, req.body.contact)
 
       if (existingUser) {
           return res.json({'error':'login','message': 'This username/email already exists!'});
@@ -27,7 +27,9 @@ router.post('/signup', function(req, res, next) {
       user.email = req.body.email;
       user.password = req.body.password;
       user.contact = req.body.contact;
+      console.log(user);
       user.save((err) => {
+        console.log("saving user...")
         if (err) {
           console.log("User save error");
           return res.json({'error':'database','message': err});
@@ -38,7 +40,7 @@ router.post('/signup', function(req, res, next) {
             return res.json({'error':'login','message': err});
         }
         console.log("User login success");
-        res.json(user);
+        res.json({'user':user});
         });
       });
     });

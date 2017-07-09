@@ -9,6 +9,11 @@
 2. `passport-local`
 3. `bcrypt`
 4. `crypto`
+5. `mongoose`
+6. `connect-mongo`
+7. `express-session`
+
+
 
 Folder > Files
 1. config > `passport.js` (set up authentication strategies here - localStrategy will use comparePassword method defined in User.js)

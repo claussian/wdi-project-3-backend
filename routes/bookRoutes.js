@@ -1,6 +1,7 @@
 import express from 'express';
 import booksController from '../controller/books';
 
+const router = express.Router();
 
 /* GET all books */
 router.get('/', booksController.listBooks);
@@ -22,3 +23,6 @@ router.put('/:id', booksController.updateBook);
 
 /* PUT to reserve a book */
 router.put('/reserve/:id', booksController.reserveBook);
+
+
+export default router;

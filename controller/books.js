@@ -1,5 +1,5 @@
-import Book from '../model/Book';
-import User from '../model/User';
+import Book from '../models/Book';
+import User from '../models/User';
 
 /*
 * Get books

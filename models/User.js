@@ -1,5 +1,5 @@
 import Mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt-nodejs';
 import crypto from 'crypto';
 
 const userSchema = new Mongoose.Schema({
@@ -14,12 +14,17 @@ const userSchema = new Mongoose.Schema({
 /**
  * Password hash middleware.
  */
-userSchema.pre('save', function save(next) {
+userSchema.pre('save', function(next) {
+  console.log("salting and hashing..");
   const user = this;
-  if (!user.isModified('password')) { return next(); }
+  console.log(user);
+  //if (!user.isModified('password')) { return next(); }
   bcrypt.genSalt(10, (err, salt) => {
+    console.log("salting..");
+    // console.log(salt);
     if (err) { return next(err); }
     bcrypt.hash(user.password, salt, null, (err, hash) => {
+      console.log("hashing..");
       if (err) { return next(err); }
       user.password = hash;
       next();
