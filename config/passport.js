@@ -19,14 +19,17 @@ passport.deserializeUser((id, done) => {
  * Sign in using Email and Password.
  */
 passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
+  console.log('passport authenticating..');
   User.findOne({ email: email.toLowerCase() }, (err, user) => {
     if (err) { return done(err); }
     if (!user) {
       return done(null, false, { msg: `Email ${email} not found.` });
     }
+    console.log("Found user!");
     user.comparePassword(password, (err, isMatch) => {
       if (err) { return done(err); }
       if (isMatch) {
+        console.log("password match!");
         return done(null, user);
       }
       return done(null, false, { msg: 'Invalid email or password.' });
