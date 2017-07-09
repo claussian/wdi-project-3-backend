@@ -237,7 +237,7 @@ exports.deleteBook = (req, res, next) => {
 
     book.remove();
 
-    res.json("ok");
+    res.json({'message':"book deleted"});
   });
 }
 
