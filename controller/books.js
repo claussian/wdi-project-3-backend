@@ -1,7 +1,10 @@
 import Book from '../model/Book';
+import User from '../model/User';
 
-/* GET index page. */
-exports.list = (req, res, next) => {
+/*
+* Get books
+*/
+exports.listBooks = (req, res, next) => {
 
   console.log("got request");
 
@@ -12,26 +15,7 @@ exports.list = (req, res, next) => {
 }
 
 /*
-*  Create
-*/
-exports.createBook = (req, res, next) => {
-
-  const book = new Book();
-    book.cover = req.body.cover || "Unknown";
-    book.title = req.body.title || "Unknown";
-    book.author = req.body.author || "Unknown";
-    book.genre = req.body.genre || "Unknown";
-    book.owner = req.user._id || "Unknown";
-    book.review = req.body.review || "Unknown";
-    book.reserved = req.body.reserved || "false";
-    book.reservedBy = req.body.reservedBy || "Unknown";
-    book.save((err, book) => {
-         res.json(book);
-    });
-}
-
-/*
-*  Read
+*  Get a book
 */
 exports.getBook = (req, res, next) => {
 
@@ -42,9 +26,43 @@ exports.getBook = (req, res, next) => {
   });
 }
 
+/*
+*  Create book, update User with new book
+*/
+exports.createBook = (req, res, next) => {
+
+  const book = new Book();
+    book.cover = req.body.cover || "Unknown";
+    book.title = req.body.title || "Unknown";
+    book.author = req.body.author || "Unknown";
+    book.genre = req.body.genre || "Unknown";
+    book.owner = req.user._id || "Unknown";
+    book.review = req.body.review || "Unknown";
+    book.reserved = false;
+    book.save((err, book) => {
+
+      /* Update user model with saved book */
+      const user = req.user
+
+      User.findById(user._id, (err, foundUser) => {
+        if (err) return res.status(400).send('Bad Request');
+
+        if(!foundUser){
+          return res.status(404).send('User not Found');
+        }
+
+        foundUser.booksOwned.push(book._id);
+
+      });
+         res.json(book);
+    });
+
+
+
+}
 
 /*
-*  Update
+*  Update book, release book based on Boolean
 */
 exports.updateBook = (req, res, next) => {
 
@@ -63,10 +81,7 @@ exports.updateBook = (req, res, next) => {
     foundBook.title = book.title;
     foundBook.author = book.author;
     foundBook.genre = book.genre;
-    foundBook.owner = book.owner;
     foundBook.review = book.review;
-    foundBook.reserved = book.reserved;
-    foundBook.reservedBy = book.reservedBy;
 
     foundBook.save((err, book)=> {
       if (err) return res.status(400).send('Bad Request');
@@ -78,7 +93,29 @@ exports.updateBook = (req, res, next) => {
 
 
 /*
-*  Delete
+* Reserve book
+*/
+exports.reserveBook = (req, res, next) => {
+  const id = req.params.id;
+  Book.findById(id, (err, foundBook) => {
+    if (err) return res.status(404).send('Not found');
+
+    if(!foundBook){
+      return res.status(404).send('Not Found');
+    }
+
+    foundBook.reserved = true;
+    foundBook.reservedBy = req.user._id;
+
+    foundBook.save((err, book)=> {
+      if (err) return res.status(400).send('Bad Request');
+      res.json(foundBook);
+    });
+  });
+}
+
+/*
+*  Delete book
 */
 exports.deleteBook = (req, res, next) => {
 

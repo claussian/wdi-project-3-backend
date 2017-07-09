@@ -3,11 +3,12 @@ const LocalStrategy = require('passport-local').Strategy;
 
 import User from '../models/User';
 
-
+/* Attaches user.id to req.session.passport.user */
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
+/* Attaches user to req.user */
 passport.deserializeUser((id, done) => {
   User.findById(id, (err, user) => {
     done(err, user);

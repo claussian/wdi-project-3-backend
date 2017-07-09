@@ -54,7 +54,7 @@ router.post('/login', function(req, res, next) {
         if(!user) {
           return res.json({'error':'user','message': "Wrong password or email"})
         }
-
+        /* req.login is a passport function that calls passport.serializeUser in passport.js */
         req.logIn(user, function(err) {
             if (err) {
               console.log("Login err", "Wrong password");
