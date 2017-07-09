@@ -69,7 +69,7 @@ router.post('/login', function(req, res, next) {
 
 router.get('/logout',(req, res, next) => {
   req.logout();
-  res.redirect('/');
+  res.json({'message': 'User logged out'});
 });
 
 export default router;

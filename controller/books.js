@@ -75,8 +75,10 @@ exports.listBooksBorrowedByUser = (req, res, next) => {
 */
 exports.createBook = (req, res, next) => {
 
+  console.log("got request createBook");
+
   const book = new Book();
-    book.cover = req.body.cover || "Unknown";
+    // book.cover = req.body.cover || "Unknown";
     book.title = req.body.title || "Unknown";
     book.author = req.body.author || "Unknown";
     book.genre = req.body.genre || "Unknown";
@@ -86,7 +88,9 @@ exports.createBook = (req, res, next) => {
     book.save((err, book) => {
 
       /* Update user model with saved book */
-      const user = req.user
+      const user = req.user;
+      console.log("saved book, now finding book owner");
+      console.log(user);
 
       User.findById(user._id, (err, foundUser) => {
         if (err) return res.status(400).send('Bad Request');
@@ -96,14 +100,15 @@ exports.createBook = (req, res, next) => {
         }
 
         foundUser.booksOwned.push(book._id);
-        foundUser.save();
+        foundUser.save( (err, savedUser) => {
+          if (err) return res.status(400).send('Bad Request');
+          console.log("pushed book._id into User");
+          console.log(savedUser);
+        });
 
       });
          res.json(book);
     });
-
-
-
 }
 
 /*
@@ -111,28 +116,31 @@ exports.createBook = (req, res, next) => {
 */
 exports.updateBook = (req, res, next) => {
 
- console.log("Got PUT Request");
+ console.log("Got request updateBook");
 
- const book = req.body.book;
+ const id = req.params.id;
+ const book = req.body;
 
- Book.findById(book._id, (err, foundBook) => {
+ Book.findById(id, (err, foundBook) => {
     if (err) return res.status(400).send('Bad Request');
 
     if(!foundBook){
       return res.status(404).send('Not Found');
     }
+    console.log("Found book, now updating")
+    console.log(foundBook);
 
-    foundBook.cover = book.cover;
+    // foundBook.cover = book.cover;
     foundBook.title = book.title;
     foundBook.author = book.author;
     foundBook.genre = book.genre;
     foundBook.review = book.review;
 
-    foundBook.save((err, book)=> {
+    foundBook.save((err, updatedBook)=> {
       if (err) return res.status(400).send('Bad Request');
-      res.json(foundBook);
+      console.log("updated book");
+      res.json(updatedBook);
     });
-
  });
 }
 
@@ -141,7 +149,9 @@ exports.updateBook = (req, res, next) => {
 * Reserve book
 */
 exports.reserveBook = (req, res, next) => {
+
   const id = req.params.id;
+
   Book.findById(id, (err, foundBook) => {
     if (err) return res.status(404).send('Not found');
 
