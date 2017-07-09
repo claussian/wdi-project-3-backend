@@ -4,7 +4,7 @@ import User from '../model/User';
 
 const router = express.Router();
 
-/* GET index page. */
+/* dispatch an ajax call */
 router.get('/user', (req, res, next) => {
   res.json(req.user);
 });
@@ -14,7 +14,7 @@ router.post('/signup', function(req, res, next) {
     User.findOne( {$or:[{ email: req.body.email },
                         { username:req.body.username}]}, (err, existingUser) => {
 
-      console.log("Data: ",req.body.email, req.body.password)
+      console.log("Data: ",req.body.email, req.body.username, req.body.password)
 
       if (existingUser) {
           return res.json({'error':'login','message': 'This username/email already exists!'});
@@ -26,6 +26,7 @@ router.post('/signup', function(req, res, next) {
       user.username = req.body.username;
       user.email = req.body.email;
       user.password = req.body.password;
+      user.contact = req.body.contact;
       user.save((err) => {
         if (err) {
           console.log("User save error");
@@ -37,7 +38,7 @@ router.post('/signup', function(req, res, next) {
             return res.json({'error':'login','message': err});
         }
         console.log("User login success");
-        res.json({'redirect':'/'});
+        res.json(user);
         });
       });
     });

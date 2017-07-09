@@ -46,7 +46,13 @@ app.use(cookieParser());
 app.use(lessMiddleware(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/api/', bookRoutes);
+/* Make passport available to app. Passport will update user session with user info on authentication */
+app.use(passport.initialize());
+app.use(passport.session());
+
+/* routes are made available to app */
+app.use('/api', bookRoutes);
+app.use('/auth', auth);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

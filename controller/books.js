@@ -21,8 +21,7 @@ exports.createBook = (req, res, next) => {
     book.title = req.body.title || "Unknown";
     book.author = req.body.author || "Unknown";
     book.genre = req.body.genre || "Unknown";
-    book.owner = req.body.owner || "Unknown";
-    book.contact = req.body.contact || "-1";
+    book.owner = req.user._id || "Unknown";
     book.review = req.body.review || "Unknown";
     book.reserved = req.body.reserved || "false";
     book.reservedBy = req.body.reservedBy || "Unknown";
@@ -65,7 +64,6 @@ exports.updateBook = (req, res, next) => {
     foundBook.author = book.author;
     foundBook.genre = book.genre;
     foundBook.owner = book.owner;
-    foundBook.contact = book.contact;
     foundBook.review = book.review;
     foundBook.reserved = book.reserved;
     foundBook.reservedBy = book.reservedBy;
