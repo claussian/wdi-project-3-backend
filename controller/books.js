@@ -22,7 +22,10 @@ exports.getBook = (req, res, next) => {
   console.log("got request getBook");
 
   const id = req.params.id;
-  Book.findById(id, (err, book) => {
+  Book.findById(id)
+    .populate('owner')
+    .populate('reservedBy')
+    .exec((err, book) => {
     if (err) return res.status(404).send('Not found');
     res.json(book);
   });
@@ -66,7 +69,7 @@ exports.listBooksBorrowedByUser = (req, res, next) => {
       if(!foundUser){
         return res.status(404).send('User not Found');
       }
-      res.json(foundUser.booksOwned);
+      res.json(foundUser.booksBorrowed);
     });
 }
 
