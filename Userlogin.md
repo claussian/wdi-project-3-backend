@@ -7,7 +7,7 @@
 `npm install --save`
 1. `passport`
 2. `passport-local`
-3. `bcrypt`
+3. `bcrypt-nodejs` For some reason `bcrypt` doesn't work
 4. `crypto`
 5. `mongoose`
 6. `connect-mongo`
@@ -21,10 +21,10 @@ Folder > Files
 3. models > `User.js` (include at least email and password)
 
 `app.js`
-`import passport from 'passport'`
+'import passport from 'passport'`
 `import auth from './routes/auth'`
 `'const passportConfig = require('./config/passport')`
-`app.use(passport.initialize())`
+`app.use(passport.initialize())` 
 `app.use(passport.session())` This is invoked on every http request. It will check whether there is an authenticated user object in `req.session.passport.user` loaded by `passport.serializeUser()`. If there is, load additional user information to `req.user` via `passport.deserializeUser()` in passport.js
 `app.use('/auth', auth)` This makes the authentication routes available to app
 
@@ -32,15 +32,15 @@ Folder > Files
 1. To sign up a new user, the route is:
 `router.post('/signup', function(req, res, next) {
     User.findOne(..`
-  1.1 In `Login.js`, in `this.state`, email, username and password keys are updated on input entry.
-  1.2 On ajax call, find existing user using `req.body.email` or `req.body.username`, if not create `new User()` and populate with `req.body` attributes
-  1.3 Invoke `req.logIn` which updates `req.session.passport.user` via `passport.serializeUser()`
+	1.1 In `Login.js`, in `this.state`, email, username and password keys are updated on input entry.
+	1.2 On ajax call, find existing user using `req.body.email` or `req.body.username`, if not create `new User()` and populate with `req.body` attributes
+	1.3 Invoke `req.logIn` which updates `req.session.passport.user` via `passport.serializeUser()`
 
 2. To login an existing user, the route is:
 `router.post('/login', function(req, res, next) {
-    passport.authenticate('local', function(error, user, info) {..`  
-  2.1 In `Login.js`, in `this.state`, email, username and password keys are updated on input entry.  
-  2.2 On ajax call, use passport.js strategy `local` to authenticate user. If password matches, invoke `req.logIn` which updates `req.session.passport.user` via `passport.serializeUser()`
+    passport.authenticate('local', function(error, user, info) {..`
+	2.1 In `Login.js`, in `this.state`, email, username and password keys are updated on input entry.
+	2.2 On ajax call, use passport.js strategy `local` to authenticate user. If password matches, invoke `req.logIn` which updates `req.session.passport.user` via `passport.serializeUser()`
 
 ### Frontend
 
