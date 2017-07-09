@@ -6,7 +6,7 @@ import User from '../model/User';
 */
 exports.listBooks = (req, res, next) => {
 
-  console.log("got request");
+  console.log("got request listBooks");
 
   Book.find({}, (err, books) => {
   if (err) return res.status(404).send('Not found');
@@ -19,11 +19,55 @@ exports.listBooks = (req, res, next) => {
 */
 exports.getBook = (req, res, next) => {
 
+  console.log("got request getBook");
+
   const id = req.params.id;
   Book.findById(id, (err, book) => {
     if (err) return res.status(404).send('Not found');
     res.json(book);
   });
+}
+
+/*
+* Get books shared by user
+*/
+exports.listBooksSharedByUser = (req, res, next) => {
+
+  console.log("got request listBooksSharedByUser");
+
+  const user = req.user
+
+  User.findById(user._id)
+    .populate('booksOwned')
+    .exec((err, foundUser) => {
+      if (err) return res.status(400).send('Bad Request');
+
+      if(!foundUser){
+        return res.status(404).send('User not Found');
+      }
+      res.json(foundUser.booksOwned);
+    });
+}
+
+/*
+* Get books shared by user
+*/
+exports.listBooksBorrowedByUser = (req, res, next) => {
+
+  console.log("got request listBooksBorrowedByUser");
+
+  const user = req.user
+
+  User.findById(user._id)
+    .populate('booksBorrowed')
+    .exec((err, foundUser) => {
+      if (err) return res.status(400).send('Bad Request');
+
+      if(!foundUser){
+        return res.status(404).send('User not Found');
+      }
+      res.json(foundUser.booksOwned);
+    });
 }
 
 /*
@@ -52,6 +96,7 @@ exports.createBook = (req, res, next) => {
         }
 
         foundUser.booksOwned.push(book._id);
+        foundUser.save();
 
       });
          res.json(book);
@@ -109,7 +154,22 @@ exports.reserveBook = (req, res, next) => {
 
     foundBook.save((err, book)=> {
       if (err) return res.status(400).send('Bad Request');
-      res.json(foundBook);
+
+      /* Update user model with saved book */
+      const user = req.user
+
+      User.findById(user._id, (err, foundUser) => {
+        if (err) return res.status(400).send('Bad Request');
+
+        if(!foundUser){
+          return res.status(404).send('User not Found');
+        }
+
+        foundUser.booksBorrowed.push(book._id);
+        foundUser.save();
+
+      });
+         res.json(book);
     });
   });
 }

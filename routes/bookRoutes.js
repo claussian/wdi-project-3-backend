@@ -8,6 +8,12 @@ router.get('/', booksController.listBooks);
 /* GET individual book */
 router.get('/:id', booksController.getBook);
 
+/* GET books shared by user */
+router.get('/shared', booksController.listBooksSharedByUser);
+
+/* GET books reserved by user */
+router.get('/borrowed', booksController.listBooksBorrowedByUser);
+
 /* POST a book to share */
 router.post('/', booksController.createBook);
 
