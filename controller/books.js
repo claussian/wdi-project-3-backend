@@ -88,6 +88,7 @@ exports.createBook = (req, res, next) => {
     book.owner = req.user._id || "Unknown";
     book.review = req.body.review || "Unknown";
     book.reserved = false;
+    book.reservedBy = null;
     book.save((err, book) => {
 
       /* Update user model with saved book */
@@ -115,7 +116,7 @@ exports.createBook = (req, res, next) => {
 }
 
 /*
-*  Update book, release book based on Boolean condition. Find user who borrowed and release his book status too
+*  Owner updates book, releases book based on Boolean condition. Find user who borrowed and release his book status too
 */
 exports.updateBook = (req, res, next) => {
 
@@ -161,7 +162,7 @@ exports.updateBook = (req, res, next) => {
           console.log(savedBorrower);
         });
       });
-      
+
       foundBook.reservedBy = null;
       foundBook.reserved = false;
     }
@@ -176,7 +177,7 @@ exports.updateBook = (req, res, next) => {
 
 
 /*
-* Reserve book
+* Borrower reserves book
 */
 exports.reserveBook = (req, res, next) => {
 

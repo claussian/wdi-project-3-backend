@@ -1,14 +1,17 @@
 import Mongoose from 'mongoose';
+import Book from './Book';
 import bcrypt from 'bcrypt-nodejs';
 import crypto from 'crypto';
+
+const Schema = Mongoose.Schema;
 
 const userSchema = new Mongoose.Schema({
   username: { type: String, unique: true},
   email: { type: String, unique: true},
   password: String,
   contact: Number,
-  booksOwned: [],
-  booksBorrowed: []
+  booksOwned: [{type: Schema.ObjectId, ref: 'Book'}],
+  booksBorrowed: [{type: Schema.ObjectId, ref: 'Book'}]
 }, { timestamps: true });
 
 /**
