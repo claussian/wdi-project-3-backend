@@ -18,7 +18,9 @@ userSchema.pre('save', function(next) {
   console.log("salting and hashing..");
   const user = this;
   console.log(user);
-  //if (!user.isModified('password')) { return next(); }
+  /* Skip salting and hashing if not user signup */
+  if (!user.isModified('password')) { return next(); }
+  /* Salting and hashing on initial save */
   bcrypt.genSalt(10, (err, salt) => {
     console.log("salting..");
     // console.log(salt);

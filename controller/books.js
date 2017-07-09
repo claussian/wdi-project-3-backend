@@ -75,6 +75,8 @@ exports.listBooksBorrowedByUser = (req, res, next) => {
 */
 exports.createBook = (req, res, next) => {
 
+  console.log("got request createBook");
+
   const book = new Book();
     // book.cover = req.body.cover || "Unknown";
     book.title = req.body.title || "Unknown";
@@ -107,9 +109,6 @@ exports.createBook = (req, res, next) => {
       });
          res.json(book);
     });
-
-
-
 }
 
 /*
@@ -117,28 +116,31 @@ exports.createBook = (req, res, next) => {
 */
 exports.updateBook = (req, res, next) => {
 
- console.log("Got PUT Request");
+ console.log("Got request updateBook");
 
- const book = req.body.book;
+ const id = req.params.id;
+ const book = req.body;
 
- Book.findById(book._id, (err, foundBook) => {
+ Book.findById(id, (err, foundBook) => {
     if (err) return res.status(400).send('Bad Request');
 
     if(!foundBook){
       return res.status(404).send('Not Found');
     }
+    console.log("Found book, now updating")
+    console.log(foundBook);
 
-    foundBook.cover = book.cover;
+    // foundBook.cover = book.cover;
     foundBook.title = book.title;
     foundBook.author = book.author;
     foundBook.genre = book.genre;
     foundBook.review = book.review;
 
-    foundBook.save((err, savedBook)=> {
+    foundBook.save((err, updatedBook)=> {
       if (err) return res.status(400).send('Bad Request');
-      res.json(savedBook);
+      console.log("updated book");
+      res.json(updatedBook);
     });
-
  });
 }
 
@@ -147,7 +149,9 @@ exports.updateBook = (req, res, next) => {
 * Reserve book
 */
 exports.reserveBook = (req, res, next) => {
+
   const id = req.params.id;
+
   Book.findById(id, (err, foundBook) => {
     if (err) return res.status(404).send('Not found');
 
