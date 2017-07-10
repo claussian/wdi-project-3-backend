@@ -1,5 +1,7 @@
 import Book from '../models/Book';
 import User from '../models/User';
+import cloudinary from 'cloudinary';
+
 
 /*
 * Get books
@@ -83,39 +85,42 @@ exports.createBook = (req, res, next) => {
 
   console.log("got request createBook");
 
-  const book = new Book();
-    // book.cover = req.body.cover || "Unknown";
-    book.title = req.body.title || "Unknown";
-    book.author = req.body.author || "Unknown";
-    book.genre = req.body.genre || "Unknown";
-    book.owner = req.user._id || "Unknown";
-    book.review = req.body.review || "Unknown";
-    book.reserved = false;
-    book.reservedBy = null;
-    book.save((err, book) => {
+  cloudinary.uploader.upload(req.file.path, (result) => {
+    const book = new Book();
+      book.cover = result.secure_url || "Unknown";
+      book.title = req.body.title || "Unknown";
+      book.author = req.body.author || "Unknown";
+      book.genre = req.body.genre || "Unknown";
+      book.owner = req.user._id || "Unknown";
+      book.review = req.body.review || "Unknown";
+      book.reserved = false;
+      book.reservedBy = null;
+      book.save((err, book) => {
 
-      /* Update user model with saved book */
-      const user = req.user;
-      console.log("saved book, now finding book owner");
-      console.log(user);
+        /* Update user model with saved book */
+        const user = req.user;
+        console.log("saved book, now finding book owner");
+        console.log(user);
 
-      User.findById(user._id, (err, foundUser) => {
-        if (err) return res.status(400).send('Bad Request');
-
-        if(!foundUser){
-          return res.status(404).send('User not Found');
-        }
-
-        foundUser.booksOwned.push(book._id);
-        foundUser.save( (err, savedUser) => {
+        User.findById(user._id, (err, foundUser) => {
           if (err) return res.status(400).send('Bad Request');
-          console.log("pushed book._id into User booksOwned");
-          console.log(savedUser);
-        });
 
+          if(!foundUser){
+            return res.status(404).send('User not Found');
+          }
+
+          foundUser.booksOwned.push(book._id);
+          foundUser.save( (err, savedUser) => {
+            if (err) return res.status(400).send('Bad Request');
+            console.log("pushed book._id into User booksOwned");
+            console.log(savedUser);
+          });
+
+        });
+           res.json(book);
       });
-         res.json(book);
-    });
+    }
+
 }
 
 /*
@@ -123,59 +128,64 @@ exports.createBook = (req, res, next) => {
 */
 exports.updateBook = (req, res, next) => {
 
- console.log("Got request updateBook");
+  console.log("Got request updateBook");
 
- const id = req.params.id;
- const book = req.body;
+  cloudinary.uploader.upload(req.file.path, (result) => {
 
- Book.findById(id, (err, foundBook) => {
-    if (err) return res.status(400).send('Bad Request');
+    console.log("returned cloudinary url: " + result.secure_url)
 
-    if(!foundBook){
-      return res.status(404).send('Not Found');
-    }
-    console.log("Found book, now updating")
+    const id = req.params.id;
+    const book = req.body;
+
+    Book.findById(id, (err, foundBook) => {
+       if (err) return res.status(400).send('Bad Request');
+
+       if(!foundBook){
+         return res.status(404).send('Not Found');
+       }
+       console.log("Found book, now updating")
 
 
-    // foundBook.cover = book.cover;
-    foundBook.title = book.title;
-    foundBook.author = book.author;
-    foundBook.genre = book.genre;
-    foundBook.review = book.review;
+       foundBook.cover = result.secure_url;
+       foundBook.title = book.title;
+       foundBook.author = book.author;
+       foundBook.genre = book.genre;
+       foundBook.review = book.review;
 
-    if(book.release == 'true') {
+       if(book.release == 'true') {
 
-      /* Find borrower and release book from his borrowed list */
-      const borrowerId = foundBook.reservedBy
+         /* Find borrower and release book from his borrowed list */
+         const borrowerId = foundBook.reservedBy
 
-      User.findById(borrowerId, (err, foundBorrower) => {
-        if (err) return res.status(400).send('Bad Request');
+         User.findById(borrowerId, (err, foundBorrower) => {
+           if (err) return res.status(400).send('Bad Request');
 
-        if(!foundBorrower){
-          return res.status(404).send('User not Found');
-        }
-        console.log("found borrower");
+           if(!foundBorrower){
+             return res.status(404).send('User not Found');
+           }
+           console.log("found borrower");
 
-        const booksBorrowed = foundBorrower.booksBorrowed;
-        booksBorrowed.splice(booksBorrowed.indexOf(borrowerId),1);
+           const booksBorrowed = foundBorrower.booksBorrowed;
+           booksBorrowed.splice(booksBorrowed.indexOf(borrowerId),1);
 
-        foundBorrower.save( (err, savedBorrower) => {
-          if (err) return res.status(400).send('Bad Request');
-          console.log("removed book._id from User booksBorrowed");
-          console.log(savedBorrower);
-        });
-      });
+           foundBorrower.save( (err, savedBorrower) => {
+             if (err) return res.status(400).send('Bad Request');
+             console.log("removed book._id from User booksBorrowed");
+             console.log(savedBorrower);
+           });
+         });
 
-      foundBook.reservedBy = null;
-      foundBook.reserved = false;
-    }
-    console.log(foundBook);
-    foundBook.save((err, updatedBook)=> {
-      if (err) return res.status(400).send('Bad Request');
-      console.log("updated book");
-      res.json(updatedBook);
+         foundBook.reservedBy = null;
+         foundBook.reserved = false;
+       }
+       console.log(foundBook);
+       foundBook.save((err, updatedBook)=> {
+         if (err) return res.status(400).send('Bad Request');
+         console.log("updated book");
+         res.json(updatedBook);
+       });
     });
- });
+  });
 }
 
 

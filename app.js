@@ -4,8 +4,22 @@ import cookieParser from 'cookie-parser';
 import Debug from 'debug';
 import express from 'express';
 import logger from 'morgan';
+import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import passport from 'passport';
+import multer from 'multer';
+const upload = multer({ dest: './uploads/' });
+import cloudinary from 'cloudinary';
+
+// Configure .env path
+dotenv.load({path: '.env'});
+
+// configure cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET
+});
 
 // import favicon from 'serve-favicon';
 import path from 'path';
@@ -54,7 +68,7 @@ app.use(session({
   saveUninitialized: true,
   secret: "WDI Singapore",
   store: new MongoStore({
-    url: 'mongodb://localhost/cardb',
+    url: 'mongodb://localhost/bookdb',
     autoReconnect: true,
     clear_interval: 3600
   })
