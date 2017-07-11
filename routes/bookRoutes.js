@@ -1,6 +1,10 @@
 import express from 'express';
 import booksController from '../controller/books';
 
+/* middleware for file handling en route to cloudinary */
+import multer from 'multer';
+const upload = multer({ dest: './uploads/' });
+
 const router = express.Router();
 
 /* GET all books */
@@ -16,10 +20,10 @@ router.get('/shared', booksController.listBooksSharedByUser);
 router.get('/borrowed', booksController.listBooksBorrowedByUser);
 
 /* POST a book to share */
-router.post('/book', booksController.createBook);
+router.post('/book', upload.single('bookcover'), booksController.createBook);
 
 /* PUT your shared book */
-router.put('/book/:id', booksController.updateBook);
+router.put('/book/:id', upload.single('bookcover'), booksController.updateBook);
 
 /* PUT to reserve a book */
 router.put('/reserve/:id', booksController.reserveBook);
