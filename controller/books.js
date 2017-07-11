@@ -129,9 +129,9 @@ exports.updateBook = (req, res, next) => {
 
   console.log("Got request updateBook");
 
-  cloudinary.uploader.upload(req.file.path, (result) => {
+  // cloudinary.uploader.upload(req.file.path, (result) => {
 
-    console.log("returned cloudinary url: " + result.secure_url)
+    //console.log("returned cloudinary url: " + result.secure_url)
 
     const id = req.params.id;
     const book = req.body;
@@ -145,11 +145,11 @@ exports.updateBook = (req, res, next) => {
        console.log("Found book, now updating")
 
 
-       foundBook.cover = result.secure_url;
-       foundBook.title = book.title;
-       foundBook.author = book.author;
-       foundBook.genre = book.genre;
-       foundBook.review = book.review;
+      //  foundBook.cover = result.secure_url;
+      //  foundBook.title = book.title;
+      //  foundBook.author = book.author;
+      //  foundBook.genre = book.genre;
+      //  foundBook.review = book.review;
 
        if(book.release == 'true') {
 
@@ -184,7 +184,7 @@ exports.updateBook = (req, res, next) => {
          res.json(updatedBook);
        });
     });
-  });
+  //});
 }
 
 
@@ -226,7 +226,13 @@ exports.reserveBook = (req, res, next) => {
         });
 
       });
-         res.json(book);
+
+      res.json(book);
+      // book.populate('owner')
+      //     .populate('reservedBy')
+      //     .exec((err,populatedBook) => {
+      //       res.json(populatedBook);
+      //     });
     });
   });
 }

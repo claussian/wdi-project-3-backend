@@ -20,7 +20,7 @@ router.get('/shared', booksController.listBooksSharedByUser);
 router.get('/borrowed', booksController.listBooksBorrowedByUser);
 
 /* POST a book to share */
-router.post('/book', upload.single('bookcover'), booksController.createBook);
+router.post('/mybooks/book', upload.single('bookcover'), booksController.createBook);
 
 /* PUT your shared book */
 router.put('/book/:id', upload.single('bookcover'), booksController.updateBook);
