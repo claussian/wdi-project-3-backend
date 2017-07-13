@@ -139,7 +139,7 @@ const releaseBook = (foundBook) => {
     console.log("found borrower");
 
     const booksBorrowed = foundBorrower.booksBorrowed;
-    booksBorrowed.splice(booksBorrowed.indexOf(borrowerId),1);
+    booksBorrowed.splice(booksBorrowed.indexOf(foundBook._id),1);
 
     foundBorrower.save( (err, savedBorrower) => {
       if (err) return res.status(400).send('Bad Request');
@@ -201,6 +201,7 @@ exports.updateBookNoPic = (req, res, next) => {
 
   const id = req.params.id;
   const book = req.body;
+  console.log(book);
 
   Book.findById(id, (err, foundBook) => {
      if (err) return res.status(400).send('Bad Request');
@@ -221,7 +222,7 @@ exports.updateBookNoPic = (req, res, next) => {
 
      foundBook.save((err, updatedBook)=> {
        if (err) return res.status(400).send('Bad Request');
-       console.log("updated book no pic");
+       console.log("updated book no pic successfully!");
        res.json(updatedBook);
      });
   });
@@ -284,10 +285,31 @@ exports.deleteBook = (req, res, next) => {
       return res.status(404).send('Not Found');
     }
 
-    book.remove();
+    /* Update user model with saved book */
+    const user = req.user
 
-    res.json({'message':"book deleted"});
+    User.findById(user._id, (err, foundUser) => {
+      if (err) return res.status(400).send('Bad Request');
+
+      if(!foundUser){
+        return res.status(404).send('User not Found');
+      }
+
+      const booksOwned = foundUser.booksOwned;
+      booksOwned.splice(booksOwned.indexOf(book._id),1);
+
+      foundUser.save( (err, savedUser) => {
+        if (err) return res.status(400).send('Bad Request');
+        console.log("removed book._id from User booksOwned");
+        console.log(savedUser);
+      });
+
+    book.remove((err) => {
+      if (err) return res.status(400).send('Bad Request');
+      res.json({'message':"book deleted"});
+    });
   });
+});
 }
 
 
