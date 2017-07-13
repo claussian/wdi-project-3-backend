@@ -11,6 +11,7 @@ const userSchema = new Mongoose.Schema({
   password: String,
   contact: Number,
   booksOwned: [{type: Schema.ObjectId, ref: 'Book'}],
+  booksOnHold: [{type: Schema.ObjectId, ref: 'Book'}],
   booksBorrowed: [{type: Schema.ObjectId, ref: 'Book'}]
 }, { timestamps: true });
 
