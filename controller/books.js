@@ -58,7 +58,7 @@ exports.listBooksSharedByUser = (req, res, next) => {
 }
 
 /*
-* Get books shared by user
+* Get books borrowed by user
 */
 exports.listBooksBorrowedByUser = (req, res, next) => {
 
@@ -85,106 +85,105 @@ exports.createBook = (req, res, next) => {
 
   console.log("got request createBook");
 
-  cloudinary.uploader.upload(req.file.path, (result) => {
     const book = new Book();
+
+    cloudinary.uploader.upload(req.file.path, (result) => {
       book.cover = result.secure_url || "Unknown";
-      book.title = req.body.title || "Unknown";
-      book.author = req.body.author || "Unknown";
-      book.genre = req.body.genre || "Unknown";
-      book.owner = req.user._id || "Unknown";
-      book.review = req.body.review || "Unknown";
-      book.reserved = false;
-      book.reservedBy = null;
-      book.save((err, book) => {
+    });
+    book.title = req.body.title || "Unknown";
+    book.author = req.body.author || "Unknown";
+    book.genre = req.body.genre || "Unknown";
+    book.owner = req.user._id || "Unknown";
+    book.review = req.body.review || "Unknown";
+    book.reserved = false;
+    book.reservedBy = null;
+    book.save((err, book) => {
 
-        /* Update user model with saved book */
-        const user = req.user;
-        console.log("saved book, now finding book owner");
-        console.log(user);
+      /* Update user model with saved book */
+      const user = req.user;
+      console.log("saved book, now finding book owner");
+      console.log(user);
 
-        User.findById(user._id, (err, foundUser) => {
+      User.findById(user._id, (err, foundUser) => {
+        if (err) return res.status(400).send('Bad Request');
+
+        if(!foundUser){
+          return res.status(404).send('User not Found');
+        }
+
+        foundUser.booksOwned.push(book._id);
+        foundUser.save( (err, savedUser) => {
           if (err) return res.status(400).send('Bad Request');
-
-          if(!foundUser){
-            return res.status(404).send('User not Found');
-          }
-
-          foundUser.booksOwned.push(book._id);
-          foundUser.save( (err, savedUser) => {
-            if (err) return res.status(400).send('Bad Request');
-            console.log("pushed book._id into User booksOwned");
-            console.log(savedUser);
-          });
-
+          console.log("pushed book._id into User booksOwned");
+          console.log(savedUser);
         });
-           res.json(book);
+
       });
+         res.json(book);
     });
 }
 
+
 /*
-*  Owner updates book, releases book based on Boolean condition. Find user who borrowed and release his book status too
+*  Owner updates book
 */
 exports.updateBook = (req, res, next) => {
 
   console.log("Got request updateBook");
 
-  // cloudinary.uploader.upload(req.file.path, (result) => {
+  const id = req.params.id;
+  const book = req.body;
 
-    //console.log("returned cloudinary url: " + result.secure_url)
+  Book.findById(id, (err, foundBook) => {
+     if (err) return res.status(400).send('Bad Request');
 
-    const id = req.params.id;
-    const book = req.body;
+     if(!foundBook){
+       return res.status(404).send('Not Found');
+     }
+     console.log("Found book, now updating");
 
-    Book.findById(id, (err, foundBook) => {
-       if (err) return res.status(400).send('Bad Request');
+    // cloudinary.uploader.upload(req.file.path, (result) => {
+    //   foundBook.cover = result.secure_url;
+    // });
+    //  foundBook.title = book.title;
+    //  foundBook.author = book.author;
+    //  foundBook.genre = book.genre;
+    //  foundBook.review = book.review;
 
-       if(!foundBook){
-         return res.status(404).send('Not Found');
-       }
-       console.log("Found book, now updating")
+     if(book.release == 'Yes') {
 
+       /* Find borrower and release book from his borrowed list */
+       const borrowerId = foundBook.reservedBy
 
-      //  foundBook.cover = result.secure_url;
-      //  foundBook.title = book.title;
-      //  foundBook.author = book.author;
-      //  foundBook.genre = book.genre;
-      //  foundBook.review = book.review;
-
-       if(book.release == 'true') {
-
-         /* Find borrower and release book from his borrowed list */
-         const borrowerId = foundBook.reservedBy
-
-         User.findById(borrowerId, (err, foundBorrower) => {
-           if (err) return res.status(400).send('Bad Request');
-
-           if(!foundBorrower){
-             return res.status(404).send('User not Found');
-           }
-           console.log("found borrower");
-
-           const booksBorrowed = foundBorrower.booksBorrowed;
-           booksBorrowed.splice(booksBorrowed.indexOf(borrowerId),1);
-
-           foundBorrower.save( (err, savedBorrower) => {
-             if (err) return res.status(400).send('Bad Request');
-             console.log("removed book._id from User booksBorrowed");
-             console.log(savedBorrower);
-           });
-         });
-
-         foundBook.reservedBy = null;
-         foundBook.reserved = false;
-       }
-       console.log(foundBook);
-       foundBook.save((err, updatedBook)=> {
+       User.findById(borrowerId, (err, foundBorrower) => {
          if (err) return res.status(400).send('Bad Request');
-         console.log("updated book");
-         res.json(updatedBook);
+
+         if(!foundBorrower){
+           return res.status(404).send('User not Found');
+         }
+         console.log("found borrower");
+
+         const booksBorrowed = foundBorrower.booksBorrowed;
+         booksBorrowed.splice(booksBorrowed.indexOf(borrowerId),1);
+
+         foundBorrower.save( (err, savedBorrower) => {
+           if (err) return res.status(400).send('Bad Request');
+           console.log("removed book._id from User booksBorrowed");
+           console.log(savedBorrower);
+         });
        });
-    });
-  //});
+
+       foundBook.reservedBy = null;
+       foundBook.reserved = false;
+     }
+
+     console.log(foundBook);
+     foundBook.save((err, updatedBook)=> {
+       if (err) return res.status(400).send('Bad Request');
+       console.log("updated book");
+       res.json(updatedBook);
+     });
+  });
 }
 
 

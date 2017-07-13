@@ -11,6 +11,8 @@ const bookSchema = new Mongoose.Schema({
   genre: String,
   owner: {type: Schema.ObjectId, ref: 'User'},
   review: String,
+  hold: Boolean,
+  holdBy: {type: Schema.ObjectId, ref: 'User'},
   reserved: Boolean,
   reservedBy: {type: Schema.ObjectId, ref: 'User'}
 }, { timestamps: true });
