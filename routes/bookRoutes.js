@@ -22,8 +22,11 @@ router.get('/borrowed', booksController.listBooksBorrowedByUser);
 /* POST a book to share */
 router.post('/book', upload.single('cover'), booksController.createBook);
 
-/* PUT your shared book */
-router.put('/book/:id', upload.single('cover'), booksController.updateBook);
+/* PUT your shared book with picture */
+router.put('/book/:id', upload.single('cover'), booksController.updateBookWithPic);
+
+/* PUT your shared book without picture */
+router.put('/booknopic/:id', booksController.updateBookNoPic);
 
 /* PUT to reserve a book */
 router.put('/reserve/:id', booksController.reserveBook);
