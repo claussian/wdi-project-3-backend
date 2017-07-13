@@ -31,5 +31,8 @@ router.put('/booknopic/:id', booksController.updateBookNoPic);
 /* PUT to reserve a book */
 router.put('/reserve/:id', booksController.reserveBook);
 
+/* DELETE to delete a book */
+router.delete('/book/:id', booksController.deleteBook);
+
 
 export default router;
