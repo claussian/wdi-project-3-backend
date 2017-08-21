@@ -277,6 +277,8 @@ exports.reserveBook = (req, res, next) => {
 */
 exports.deleteBook = (req, res, next) => {
 
+  console.log("Got request deleteBook");
+
   const id = req.params.id;
   Book.findById(id, (err, book) => {
     if (err) return res.status(400).send('Bad Request');
