@@ -10,6 +10,7 @@ import passport from 'passport';
 import multer from 'multer';
 const upload = multer({ dest: './uploads/' });
 import cloudinary from 'cloudinary';
+import fs from 'fs';
 
 // Configure .env path
 dotenv.load({path: '.env'});
@@ -28,17 +29,34 @@ import lessMiddleware from 'less-middleware';
 /* import routes to make them available to app */
 import bookRoutes from './routes/bookRoutes';
 import auth from './routes/auth';
+import index from './routes/index';
 
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost/bookdb');
+mongoose.connect(process.env.MONGODB_URI);
 mongoose.connection.on('error', (err) => {
   console.error(err);
   console.log('%s MongoDB connection error. Please make sure MongoDB is running.', chalk.red('✗'));
   process.exit();
 });
 
+/* set up https with key and cert */
+const ca = fs.readFileSync('./ca_bundle.crt');
+const key = fs.readFileSync('./private.key');
+const cert = fs.readFileSync('./certificate.crt');
+
+const option = {
+	ca: ca,
+	key: key,
+	cert: cert
+}
+
 const app = express();
+app.set('port', process.env.PORT || 443);
+const server = require('https').Server(option,app);
+const http = require('http');
+http.createServer(function (req, res) {res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url }); res.end(); }).listen(80);
 const debug = Debug('wdi-project-3-backend:app');
+
 
 /**
  * API keys and Passport configuration.
@@ -59,7 +77,9 @@ app.use(bodyParser.urlencoded({
 
 app.use(cookieParser());
 app.use(lessMiddleware(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
+app.use(express.static('www'));
 
 /* Why do we need this ? To connect mongodb by session? */
 const MongoStore = require('connect-mongo')(session);
@@ -68,7 +88,7 @@ app.use(session({
   saveUninitialized: true,
   secret: "WDI Singapore",
   store: new MongoStore({
-    url: 'mongodb://localhost/bookdb',
+    url: process.env.MONGODB_URI,
     autoReconnect: true,
     clear_interval: 3600
   })
@@ -80,6 +100,7 @@ app.use(passport.session());
 /* routes are made available to app */
 app.use('/api', bookRoutes);
 app.use('/auth', auth);
+app.use('/',index);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
@@ -103,6 +124,13 @@ app.use((err, req, res, next) => {
 process.on('uncaughtException', (err) => {
   debug('Caught exception: %j', err);
   process.exit(1);
+});
+
+/**
+ * Start Express server.
+ */
+server.listen(app.get('port'), () => {
+  console.log('App is running at http://localhost:' + app.get('port')); 
 });
 
 export default app;
